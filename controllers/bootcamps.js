@@ -3,6 +3,13 @@ const asyncHandler = require("../middleware/async");
 const geocoder = require("../utils/geocoder");
 const ErrorResponse = require("../utils/errorResponse");
 
+// @desc      Get all bootcamps
+// @route     GET /api/v1/bootcamps
+// @access    Public
+exports.getBootcamps = asyncHandler(async (req, res, next) => {
+  res.status(200).json(res.advancedResults);
+});
+
 // @desc Get all bootcmaps
 //@route GET /api/v1/bootcamps
 //@acess Public
@@ -27,7 +34,7 @@ exports.getBootcamps = asyncHandler(async (req, res, next) => {
   queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`);
 
   // Finding resource
-  query = Bootcamp.find(JSON.parse(queryStr));
+  query = Bootcamp.find(JSON.parse(queryStr)).populate("courses");
 
   // Select Fields
   if (req.query.select) {
@@ -79,7 +86,6 @@ exports.getBootcamps = asyncHandler(async (req, res, next) => {
   });
 
   //res.status(400).json({ success: false });
-  next(err);
 });
 
 // @desc Get a single  bootcmaps
@@ -96,7 +102,6 @@ exports.getBootcamp = asyncHandler(async (req, res, next) => {
   res.status(200).json({ success: true, data: bootcamp });
 
   //res.status(400).json({ success: false });
-  next(err);
 });
 
 // @desc Create new bootcam
@@ -111,7 +116,6 @@ exports.createBootcamp = asyncHandler(async (req, res, next) => {
   });
 
   //res.status(400).json({ success: false });
-  next(err);
 });
 
 // @desc Update a single  bootcmaps
@@ -132,14 +136,13 @@ exports.updateBootcamp = asyncHandler(async (req, res, next) => {
   res.status(200).json({ success: true, data: bootcamp });
 
   //res.status(400).json({ success: false });
-  next(err);
 });
 
 // @desc Delete a single  bootcmaps
 //@route DELETE /api/v1/bootcamps/:id
 //@acess Private
 exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
-  const bootcamp = await Bootcamp.findByIdAndDelete(req.params.id);
+  const bootcamp = await Bootcamp.findById(req.params.id);
 
   if (!bootcamp) {
     return next(
@@ -147,10 +150,11 @@ exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
     );
   }
 
+  bootcamp.remove();
+
   res.status(200).json({ success: true, data: {} });
 
   //res.status(400).json({ success: false });
-  next(err);
 });
 
 // @desc      Get bootcamps within a radius
